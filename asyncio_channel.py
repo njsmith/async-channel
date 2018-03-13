@@ -424,11 +424,13 @@ class Channel:
         self._close()
 
 
-def main(host, port, client_count, msg_count):
+def main(host, port, client_count, msg_count, latencies):
     async def client(host, port, client_id, msg_count):
         channel = await open_connection(host, port)
         for i in range(msg_count):
+            start = time.monotonic()
             reply = await channel.send(f'ohai {client_id}-{i}')
+            latencies.append(time.monotonic() - start)
         await channel.close()
 
     async def handle_client(channel):
@@ -452,4 +454,4 @@ def main(host, port, client_count, msg_count):
 
 
 if __name__ == '__main__':
-    main('localhost', 5555, 1, 1)
+    main('localhost', 5555, 1, 1, [])

@@ -2,6 +2,7 @@ import functools
 import collections
 import itertools
 import traceback
+import time
 
 from async_generator import asynccontextmanager
 import trio
@@ -256,12 +257,14 @@ class Channel:
                     raise RuntimeError(f'Invalid message type {msg_type}')
 
 
-def main(host, port, client_count, msg_count):
+def main(host, port, client_count, msg_count, latencies):
     async def client(nursery, host, port, client_id, msg_count):
         async with open_connection(nursery, host, port) as channel:
             # print('Client: connected')
             for i in range(msg_count):
+                start = time.monotonic()
                 reply = await channel.send(f'ohai {client_id}-{i}')
+                latencies.append(time.monotonic() - start)
                 # print('Client: got reply:', reply)
         # print('Client: done')
 
@@ -289,4 +292,4 @@ def main(host, port, client_count, msg_count):
 
 
 if __name__ == '__main__':
-    main('localhost', 5555, 1, 1)
+    main('localhost', 5555, 1, 1, [])
