@@ -26,8 +26,10 @@ async def open_connection(nursery, host, port, *, create_connection=None):
     stream = await trio.open_tcp_stream(host, port)
     connection = create_connection()
     channel = Channel(nursery, stream, connection)
-    yield channel
-    await channel.close()
+    try:
+        yield channel
+    finally:
+        await channel.close()
 
 
 async def start_server(nursery, host, port, client_connected_task, *,
